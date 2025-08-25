@@ -1,59 +1,158 @@
-import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs, useRouter } from "expo-router";
+import { useState } from "react";
+import { Modal, View, Text, TouchableOpacity } from "react-native";
 
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
+
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const router = useRouter();
+  const isLoggedIn = true;
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  const openLoginModal = () => {
+    setIsLoginModalOpen(true);
+  };
+
+  const closeLoginModal = () => {
+    setIsLoginModalOpen(false);
+  };
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
+    <>
+      <Tabs
+        backBehavior="history"
+        screenOptions={{
+          headerShown: false,
         }}
-      />
-      <Tabs.Screen
-        name="two"
-        options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="(home)"
+          options={{
+            tabBarLabel: () => null,
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name="home"
+                size={24}
+                color={focused ? "black" : "gray"}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="search"
+          options={{
+            tabBarLabel: () => null,
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name="radio"
+                size={24}
+                color={focused ? "black" : "gray"}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="add"
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault();
+              if (isLoggedIn) {
+                router.navigate("/modal");
+              } else {
+                openLoginModal();
+              }
+            },
+          }}
+          options={{
+            tabBarLabel: () => null,
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name="add"
+                size={24}
+                color={focused ? "black" : "gray"}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="activity"
+          listeners={{
+            tabPress: (e) => {
+              if (!isLoggedIn) {
+                e.preventDefault();
+                openLoginModal();
+              }
+            },
+          }}
+          options={{
+            tabBarLabel: () => null,
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name="heart-outline"
+                size={24}
+                color={focused ? "black" : "gray"}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="[username]"
+          listeners={{
+            tabPress: (e) => {
+              if (!isLoggedIn) {
+                e.preventDefault();
+                openLoginModal();
+              }
+            },
+          }}
+          options={{
+            tabBarLabel: () => null,
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name="person-outline"
+                size={24}
+                color={focused ? "black" : "gray"}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="(post)/[username]/post/[postID]"
+          options={{
+            href: null,
+          }}
+        />
+            <Tabs.Screen
+          name="following"
+          options={{
+            tabBarLabel:() =>null,
+            href: null,
+          }}
+        />
+      </Tabs>
+      
+      <Modal
+        visible={isLoginModalOpen}
+        transparent={true}
+        animationType="slide"
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "flex-end",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+          }}
+        >
+          <View style={{ backgroundColor: "white", padding: 20 }}>
+            <Text>Login Modal</Text>
+            <TouchableOpacity onPress={closeLoginModal}>
+              <Ionicons name="close" size={24} color="#555" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
